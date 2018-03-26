@@ -10,8 +10,9 @@
                         style="float: left; display:inline-block"
                 >
                 </el-autocomplete>
-                <el-input-number  class="top" style="width: 150px" v-model="stockNum" :min="100" :max="100000" label="描述文字"></el-input-number>
-                <el-button class="top" type="primary">购买</el-button>
+                <!--<el-input-number  class="top" style="width: 150px" v-model="stockNum" :min="100" :max="100000" label="描述文字"></el-input-number>-->
+                <!--<el-button class="top" type="primary">购买</el-button>-->
+                <el-button type="primary" style="display:inline-block; margin-left: 40px;width: 100px" @click="open" >购买</el-button>
                 <el-button class="top" type="primary">+自选</el-button>
             </div>
             <div style="margin-top: 50px">
@@ -22,20 +23,20 @@
                     <el-tabs type="border-card" style="width: 100%">
                         <el-tab-pane label="历史">
                             <el-table
-                                    :data="tableData"
+                                    :data="historyStocks"
                                     style="width: 100%">
                                 <el-table-column
-                                        prop="date"
+                                        prop="stockName"
                                         label="股票"
                                         width="80">
                                 </el-table-column>
                                 <el-table-column
-                                        prop="name"
+                                        prop="lastTrade"
                                         label="最新价"
                                         width="80">
                                 </el-table-column>
                                 <el-table-column
-                                        prop="address"
+                                        prop="chg"
                                         label="涨跌幅"
                                         width="80">
                                 </el-table-column>
@@ -75,7 +76,8 @@
                 restaurants: [],
                 state4: '',
                 timeout:  null,
-                stockNum: ''
+                stockNum: '',
+                historyStocks: []
             };
         },
         methods: {
@@ -119,12 +121,12 @@
                 }, response => {
                     console.log("error");
                 });
-                this.$http.post('http://localhost:8080/paper/stock/selectDetailBySymbol', this.stockDTO).then(response => {
+                this.$http.post('http://localhost:8080/paper/stock/getSymbolLastInfo', this.stockDTO).then(response => {
                     response.headers.set("Content-Type", "application/json")
                     this.stockDetail = response.data.data;
-                    this.drawLine();
+                    this.historyStocks.splice(0, 0, this.stockDetail)
                     console.log("stockDetail")
-                    console.log(this.stockDetail)
+                    console.log(response.data)
                 }, response => {
                     console.log("error");
                 });
@@ -166,6 +168,25 @@
 //                        data: [820, 932, 901, 934, 1290, 1330, 1320],
 //                        type: 'line'
 //                    }]
+                });
+            },
+            open() {
+                this.$prompt('请输入购买的数量', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    inputPattern: /\d/,
+                    inputErrorMessage: '只能输入数字'
+                }).then(({ value }) => {
+                    this.$message({
+                        type: 'success',
+                        message: '你的购买了: ' + value + '股'
+                    });
+                    this.stockNum = value
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '取消输入'
+                    });
                 });
             }
         },
