@@ -5,11 +5,12 @@ import App from './App.vue'
 import VueResource from 'vue-resource'
 import VueRouter from 'vue-router'
 import routers from './routers.js'
+import echarts from 'echarts'
 
+Vue.prototype.$echarts = echarts
 Vue.use(VueResource);
 Vue.use(ElementUI)
 Vue.use(VueRouter)
-Vue.use(routers)
 
 const router = new VueRouter({
     mode: 'history',
