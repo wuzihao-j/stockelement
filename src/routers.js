@@ -6,6 +6,7 @@ import StockIndex from './components/StockIndex.vue'
 import Login from './components/user/Login.vue'
 import Home from './components/Home.vue'
 import Personal from './components/Personal.vue'
+import trade from './components/TradeDistory.vue'
 
 
 const routers = [
@@ -36,7 +37,12 @@ const routers = [
     {
         path: '/stock/personal',
         component: Personal
+    },
+    {
+        path: '/stock/tradeDistory',
+        component: trade
     }
+
     // {
     //     path: '/',
     //     component: Login

@@ -1,23 +1,35 @@
 <template>
     <div>
+        <template>
+            <!--<div class="block">-->
+                <!--<el-date-picker-->
+                        <!--v-model=""-->
+                        <!--type="daterange"-->
+                        <!--range-separator="至"-->
+                        <!--start-placeholder="开始日期"-->
+                        <!--end-placeholder="结束日期">-->
+                <!--</el-date-picker>-->
+            <!--</div>-->
+        </template>
         <div>
         <el-table
                 :data="stockInfo.list"
-                style="width: 100%" class="top">
-            <el-table-column prop="symbol" label="代码" width="80"></el-table-column>
-            <el-table-column prop="stockName" label="名称" width="80"></el-table-column>
-            <el-table-column prop="lastTrade" label="最新价" width="80"></el-table-column>
-            <el-table-column prop="chg" label="涨跌幅%" width="80"></el-table-column>
-            <el-table-column prop="stockChange" label="涨跌额" width="60"></el-table-column>
-            <el-table-column prop="fiveMinCg" label="5分钟涨跌幅" width="60"></el-table-column>
-            <el-table-column prop="volume" label="成交量(手)" width="60"></el-table-column>
-            <el-table-column prop="turnover" label="成交额（万元)" width="80"></el-table-column>
-            <el-table-column prop="turnoverRate" label="换手率" width="80"></el-table-column>
-            <el-table-column prop="swing" label="振幅" width="80"></el-table-column>
-            <el-table-column prop="qrr" label="量比" width="80"></el-table-column>
-            <el-table-column prop="theCommittee" label="委比" width="80"></el-table-column>
-            <el-table-column prop="peratio" label="市盈率" width="80"></el-table-column>
-            <el-table-column prop="stockDate" label="时间" width="80"></el-table-column>
+                style="width: 100%" class="top"
+                :row-class-name="tableRowClassName">
+            <el-table-column prop="symbol" label="代码" style="flex: 1"></el-table-column>
+            <el-table-column prop="stockName" label="名称" style="flex: 1"></el-table-column>
+            <el-table-column prop="lastTrade" label="最新价" style="flex: 1"></el-table-column>
+            <el-table-column prop="chg" label="涨跌幅%" style="flex: 1"></el-table-column>
+            <el-table-column prop="stockChange" label="涨跌额" style="flex: 1"></el-table-column>
+            <!--<el-table-column prop="fiveMinCg" label="5分钟涨跌幅" width="60"></el-table-column>-->
+            <!--<el-table-column prop="volume" label="成交量(手)" width="60"></el-table-column>-->
+            <el-table-column prop="turnover" label="成交额（万元)" style="flex: 1"></el-table-column>
+            <el-table-column prop="turnoverRate" label="换手率" style="flex: 1"></el-table-column>
+            <el-table-column prop="swing" label="振幅" style="flex: 1"></el-table-column>
+            <!--<el-table-column prop="qrr" label="量比" width="100"></el-table-column>-->
+            <!--<el-table-column prop="theCommittee" label="委比" width="100"></el-table-column>-->
+            <el-table-column prop="peratio" label="市盈率" style="flex: 1"></el-table-column>
+            <el-table-column prop="stockDate" label="时间" style="flex: 1"></el-table-column>
         </el-table>
         </div>
         <div class="bottom">
@@ -44,6 +56,14 @@
         margin-left: auto;
         margin-right: auto;
     }
+
+    .el-table .warning-row {
+        background: rgba(181, 250, 255, 0.2);
+    }
+
+    .el-table .success-row {
+        background: rgba(249, 213, 184, 0.14);
+    }
 </style>
 
 <script>
@@ -53,7 +73,7 @@
                 stockInfo: {},
                 stockDTO: {
                     pageNum: 1,
-                    pageSize: 5
+                    pageSize: 10
                 },
                 allMenus:[{
                     symbol: '',
@@ -77,7 +97,7 @@
                 currentPage4: 4
             }
         },
-        created () {
+        mounted () {
             this.$http.post('http://localhost:8080/paper/stock/listStockInfo', this.stockDTO).then(response => {
                 response.headers.set("Content-Type", "application/json")
                 this.stockInfo = response.data.data;
@@ -101,7 +121,14 @@
                 }, response => {
                     console.log("error");
                 });
-            }
+            },
+            tableRowClassName({row, rowIndex}){
+                if(rowIndex % 2 == 0){
+                    return 'warning-row'
+                } else {
+                    return 'success-row'
+                }
+            },
         }
     }
 </script>

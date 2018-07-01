@@ -1,50 +1,54 @@
+<script src="../main.js"></script>
 <template>
-    <div>
-        <div style="height: 100%;">
-            <div>
-                <el-autocomplete
-                        v-model="stockDTO.keyword"
-                        :fetch-suggestions="querySearchAsync"
-                        placeholder="请输入内容"
-                        @select="handleSelect"
-                        style="float: left; display:inline-block"
-                >
-                </el-autocomplete>
-                <!--<el-input-number  class="top" style="width: 150px" v-model="stockNum" :min="100" :max="100000" label="描述文字"></el-input-number>-->
-                <!--<el-button class="top" type="primary">购买</el-button>-->
-                <el-button type="primary" style="display:inline-block; margin-left: 40px;width: 100px" @click="open" >购买</el-button>
-                <el-button class="top" type="primary">+自选</el-button>
+    <div style="height: 100%; width: 100%">
+        <div class="top">
+            <el-autocomplete
+                    v-model="stockDTO.keyword"
+                    :fetch-suggestions="querySearchAsync"
+                    placeholder="请输入内容"
+                    @select="handleSelect"
+                    class="input"
+            >
+            </el-autocomplete>
+            <!--<el-input-number  class="top" style="width: 150px" v-model="stockNum" :min="100" :max="100000" label="描述文字"></el-input-number>-->
+            <!--<el-button class="top" type="primary">购买</el-button>-->
+            <div class="right-buttonn">
+                <el-button class="button" type="primary" v-if="stockDetail.symbol != null" @click="open" >购买</el-button>
+                <el-button class="button" type="primary" v-else style="visibility: hidden;" ></el-button>
+                <el-button class="button" type="primary" v-if="stockDetail.symbol != null" @click="switchSelect">{{isAttentionTip}}</el-button>
+                <el-button class="button" type="primary" v-else style="visibility: hidden;"></el-button>
             </div>
-            <div style="margin-top: 50px">
-                <div class="charts" style="float: left">
-                    <div id="myChart" style="width:  700px; height: 400px; margin: 0 auto;"></div>
-                </div>
-                <div style="float: right; height: 100%; margin-right: 40px;">
-                    <el-tabs type="border-card" style="width: 100%">
-                        <el-tab-pane label="历史">
-                            <el-table
-                                    :data="historyStocks"
-                                    style="width: 100%">
-                                <el-table-column
-                                        prop="stockName"
-                                        label="股票"
-                                        width="80">
-                                </el-table-column>
-                                <el-table-column
-                                        prop="lastTrade"
-                                        label="最新价"
-                                        width="80">
-                                </el-table-column>
-                                <el-table-column
-                                        prop="chg"
-                                        label="涨跌幅"
-                                        width="80">
-                                </el-table-column>
-                            </el-table>
-                        </el-tab-pane>
-                        <el-tab-pane label="自选股">自选股</el-tab-pane>
-                    </el-tabs>
-                </div>
+        </div>
+        <div class="table">
+            <div class="charts">
+                <div id="myChart"></div>
+            </div>
+            <div  class="distory">
+                <el-tabs type="border-card" style="width: 100%">
+                    <el-tab-pane label="历史">
+                        <el-table
+                                :data="historyStocks"
+                                style="width: 100%">
+                            <el-table-column
+                                    prop="stockName"
+                                    label="股票"
+                                    style="flex: 1">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="lastTrade"
+                                    label="最新价"
+                                    style="flex: 1">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="chg"
+                                    label="涨跌幅"
+                                    style="flex: 1">
+                            </el-table-column>
+                        </el-table>
+                    </el-tab-pane>
+
+                    <el-tab-pane label="自选股">自选股</el-tab-pane>
+                </el-tabs>
             </div>
         </div>
     </div>
@@ -69,15 +73,20 @@
                 timeList: [],
                 shares: [],
                 stockDTO: {
-                    keyword: ''
+                    keyword: '',
+                    symbol: '',
+                    userId: '',
+                    stockNum: '',
+                    lastTrade: ''
                 },
                 stockDetail: {},
                 stockName: '',
                 restaurants: [],
                 state4: '',
                 timeout:  null,
-                stockNum: '',
-                historyStocks: []
+                historyStocks: [],
+                isAttention: '',
+                isAttentionTip: ''
             };
         },
         methods: {
@@ -88,7 +97,7 @@
                 }, response => {
                     console.log("error");
                 });
-                return this.selectList;x
+                return this.selectList;
             },
             querySearchAsync(queryString, cb) {
                 var restaurants = this.restaurants;
@@ -125,8 +134,20 @@
                     response.headers.set("Content-Type", "application/json")
                     this.stockDetail = response.data.data;
                     this.historyStocks.splice(0, 0, this.stockDetail)
-                    console.log("stockDetail")
-                    console.log(response.data)
+                }, response => {
+                    console.log("error");
+                });
+                //判断股票是否已经关注
+                this.$http.post('http://localhost:8080/paper/stock/isAttention', this.stockDTO).then(response => {
+                    response.headers.set("Content-Type", "application/json")
+                    if(response.data.code == 103){
+                        this.isAttention = 100
+                    }
+                    if(this.isAttention == 100){
+                        this.isAttentionTip = '已关注'
+                    } else {
+                        this.isAttentionTip = '关注'
+                    }
                 }, response => {
                     console.log("error");
                 });
@@ -157,40 +178,69 @@
                         type: 'line',
                         data: this.shares
                     }]
-//                    xAxis: {
-//                        type: 'category',
-//                        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-//                    },
-//                    yAxis: {
-//                        type: 'value'
-//                    },
-//                    series: [{
-//                        data: [820, 932, 901, 934, 1290, 1330, 1320],
-//                        type: 'line'
-//                    }]
                 });
             },
             open() {
                 this.$prompt('请输入购买的数量', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
-                    inputPattern: /\d/,
-                    inputErrorMessage: '只能输入数字'
+                    inputPattern: /^[1-9]\d*$/,
+                    inputErrorMessage: '只能输入数字并且大于0'
                 }).then(({ value }) => {
                     this.$message({
                         type: 'success',
                         message: '你的购买了: ' + value + '股'
                     });
-                    this.stockNum = value
+                    this.stockDTO.stockNum = value
+                    this.stockDTO.lastTrade = this.stockDetail.lastTrade
+                    this.$http.post('http://localhost:8080/paper/stock/buyStock', this.stockDTO).then(response => {
+                        response.headers.set("Content-Type", "application/json")
+                    }, response => {
+                        console.log("error");
+                    });
                 }).catch(() => {
                     this.$message({
                         type: 'info',
                         message: '取消输入'
                     });
                 });
+            },
+            selectStock(){
+                this.$http.post('http://localhost:8080/paper/stock/attentionStock', this.stockDTO).then(response => {
+                    response.headers.set("Content-Type", "application/json")
+                    if(response.data.code == 104){
+                        this.isAttention = 100
+                        this.isAttentionTip = '已关注'
+                    }
+                }, response => {
+                    console.log("error");
+                });
+            },
+            cancelSelect(){
+                this.$http.post('http://localhost:8080/paper/stock/cancenAttention', this.stockDTO).then(response => {
+                    response.headers.set("Content-Type", "application/json")
+                    if(response.data.code == 104){
+                        this.isAttention = 300
+                        this.isAttentionTip = '关注'
+                    }
+                }, response => {
+                    console.log("error");
+                });
+            },
+            switchSelect(){
+                if(this.isAttention == 100){
+                    this.cancelSelect()
+                    console.log(this.isAttention)
+                    console.log(this.isAttentionTip)
+                } else {
+                    this.selectStock()
+                    console.log(this.isAttention)
+                    console.log(this.isAttentionTip)
+                }
             }
         },
         mounted () {
+            this.stockDTO.userId = JSON.parse(sessionStorage.loginUser).userId;
             this.restaurants = this.loadAll();
             this.drawLine();
         }
@@ -199,8 +249,45 @@
 
 <style>
     .top {
-        display:inline-block; margin-left: 40px;width: 100px
+        display: flex;
+        margin-bottom: 100px;
     }
+
+    .input{
+        display: inline-flex;
+        flex: 2;
+        margin-right: 100px;
+    }
+
+    .right-buttonn{
+        display: inline-flex;
+        flex: 1;
+        margin-left: 100px;
+    }
+
+    .button{
+        flex: 1;
+        margin-left: 50px;
+        margin-right: 50px;
+    }
+
+    .table {
+        display: flex;
+    }
+
+    .charts {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .distory {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+
 </style>
 
 

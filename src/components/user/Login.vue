@@ -8,7 +8,6 @@
             <button @click="login">登录</button>
             <span @click="ToRegister">没有账号？马上注册</span>
         </div>
-
         <div class="type" v-show="showRegister">
             <h3>注册</h3>
             <p v-show="showTishi">{{tishi}}</p>

@@ -1,12 +1,13 @@
 <template>
   <div>
-    <home v-show="homeShow" :loginUser="loginUser" v-on:switchExit="exit($event)"></home>
+    <home style="display: flex; height: 100%" v-show="homeShow" :loginUser="loginUser" v-on:switchExit="exit($event)"></home>
     <div v-show="loginShow">
       <div class="type" v-show="showLogin">
         <h3>登录</h3>
         <p v-show="showTishi">{{tishi}}</p>
         <input type="text" placeholder="请输入用户名" v-model="nickname">
         <input type="password" placeholder="请输入密码" v-model="password">
+        <el-checkbox v-model="checked" style="color:#a0a0a0;">一周内自动登录</el-checkbox>
         <button @click="login">登录</button>
         <span @click="ToRegister">没有账号？马上注册</span>
       </div>
@@ -47,16 +48,15 @@
                     code: ''
                 },
                 loginUser: {
-                }
+                },
+                checked:""
             }
         },
         components: {Home, Login},
         methods: {
             mounted(){
-                /*页面挂载获取cookie，如果存在username的cookie，则跳转到主页，不需登录*/
-                if(getCookie('username')){
-                    this.$router.push('/home')
-                }
+
+
             },
             login() {
                 if (this.nickname == "" || this.password == "") {
@@ -79,6 +79,9 @@
                             /*路由跳转this.$router.push*/
                             this.$router.push('/main')
                         } else {
+                            if(this.checked) {
+                                this.setCookie(this.nickname, this.password, 7)
+                            }
                             this.showTishi = true
                             this.loginShow = false
                             this.homeShow = true
@@ -86,14 +89,13 @@
                             setTimeout(function () {
                                 this.$router.push('/home')
                             }.bind(this), 1000)
-                            this.$http.post('http://localhost:8080/paper/user/getUserInfo', data).then(response => {
+                            this.$http.get('http://localhost:8080/paper/user/getUserInfo/' + data.nickname).then(response => {
                                 response.headers.set("Content-Type", "application/json")
                                 this.loginUser = response.data.data;
                                 sessionStorage.loginUser = JSON.stringify(this.loginUser)
                             }, response => {
                                 console.log("error");
                             });
-
                         }
                     })
                 }
@@ -137,10 +139,32 @@
                 this.homeShow = false;
                 this.nickname = '';
                 this.password = '';
+            },
+            setCookie(c_name,c_pwd,exdays) {
+                var exdate=new Date();//获取时间
+                exdate.setTime(exdate.getTime() + 24*60*60*1000*exdays);//保存的天数
+                //字符串拼接cookie
+                window.document.cookie="userName"+ "=" +c_name+";path=/;expires="+exdate.toGMTString();
+                window.document.cookie="userPwd"+"="+c_pwd+";path=/;expires="+exdate.toGMTString();
+            },
+            getCookie:function () {
+                if (document.cookie.length>0) {
+                    var arr=document.cookie.split('; ');//这里显示的格式需要切割一下自己可输出看下
+                    for(var i=0;i<arr.length;i++){
+                        var arr2=arr[i].split('=');//再次切割
+                        //判断查找相对应的值
+                        if(arr2[0]=='userName'){
+                            this.nickname=arr2[1];//保存到保存数据的地方
+                        }else if(arr2[0]=='userPwd'){
+                            this.password=arr2[1];
+                        }
+                    }
+                }
             }
         },
         mounted(){
-            console.log("mounted")
+            console.log("app")
+            this.getCookie()
             if(sessionStorage.loginUser != null){
                 this.homeShow = true
                 this.loginShow = false
@@ -155,6 +179,7 @@
 </script>
 
 <style>
+
   #app {
     font-family: Helvetica, sans-serif;
     text-align: center;
