@@ -1,65 +1,49 @@
 <template  class="template">
     <el-container class="container">
-        <el-aside class="left">
-            <el-menu v-for="oneMenu in allMenus" style="height: 100%">
-                <el-submenu index="oneMenu.fullPath" @click="rootFunction()">
-                    <template slot="title">
-                        <i class="el-icon-message" v-if="oneMenu.menuName != '基础配置'"></i>
-                        <i class="el-icon-setting" v-else></i>{{oneMenu.menuName}}
-                    </template>
-                    <template v-for="twoMenu in oneMenu.childMenus">
-                        <el-submenu index="twoMenu.fullPath" v-if="twoMenu.childMenus != null">
-                            <template slot="title">
-                                {{twoMenu.menuName}}
-                            </template>
-                            <template v-for="threeMenu in twoMenu.childMenus">
-                                <el-menu-item index="threeMenu.fullPath" @click="rootFunction(threeMenu.url )">
-                                    {{threeMenu.menuName}}
-                                </el-menu-item>
-                            </template>
-                        </el-submenu>
-                        <el-menu-item index="twoMenu.fullPath" v-else @click="rootFunction(twoMenu.url)">
-                            {{twoMenu.menuName}}
-                        </el-menu-item>
-
-                        <!--<el-menu-item index="twoMenu.fullPath" v-if="twoMenu.childMenus == null" @click="rootFunction(twoMenu.url)">-->
-                        <!--{{twoMenu.menuName}}-->
-                        <!--</el-menu-item>-->
-                        <!--<el-submenu index="twoMenu.fullPath" v-else v-for="threeMenu in twoMenu.childMenus">-->
-                        <!--<template slot="title">-->
-                        <!--<i class="el-icon-message"></i>{{threeMenu.menuName}}-->
-                        <!--</template>-->
-                        <!--<el-menu-item index="threeMenu.fullPath" @click="rootFunction(threeMenu.url )">-->
-                        <!--{{threeMenu.menuName}}-->
-                        <!--</el-menu-item>-->
-                        <!--</el-submenu>-->
-                    </template>
-                </el-submenu>
-            </el-menu>
-        </el-aside>
-
-        <el-main class="right" @touchmove.prevent>
-            <el-header style="font-size: 12px;" class="right-top">
-                <div style="float: right; margin-right: 80px">
-                    <i class="el-icon-bell"></i>
-                    <el-dropdown :hide-on-click="false" class="el-dropdown-link" @command="handleCommand">
+        <el-header style="font-size: 12px;" class="top">
+            <div style="float: right; margin-right: 80px">
+                <i class="el-icon-bell"></i>
+                <el-dropdown :hide-on-click="false" class="el-dropdown-link" @command="handleCommand">
                     <span  class="el-dropdown-link">
                         {{loginUser.nickname}}
                     </span>
-                        <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item command="personal">个人中心</el-dropdown-item>
-                            <el-dropdown-item command="exit">退出</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                </div>
-
-            </el-header>
-            <div class="right-bottom">
-                <div class="right-bottom-in">
-                    <router-view></router-view>
-                </div>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item command="personal">个人中心</el-dropdown-item>
+                        <el-dropdown-item command="exit">退出</el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
             </div>
-        </el-main>
+        </el-header>
+        <div class="bottom">
+            <el-aside class="left">
+                <el-menu v-for="oneMenu in allMenus">
+                    <el-submenu index="oneMenu.fullPath" @click="rootFunction()">
+                        <template slot="title">
+                            <i class="el-icon-message" v-if="oneMenu.menuName != '基础配置'"></i>
+                            <i class="el-icon-setting" v-else></i>{{oneMenu.menuName}}
+                        </template>
+                        <template v-for="twoMenu in oneMenu.childMenus">
+                            <el-submenu index="twoMenu.fullPath" v-if="twoMenu.childMenus != null">
+                                <template slot="title">
+                                    {{twoMenu.menuName}}
+                                </template>
+                                <template v-for="threeMenu in twoMenu.childMenus">
+                                    <el-menu-item index="threeMenu.fullPath" @click="rootFunction(threeMenu.url )">
+                                        {{threeMenu.menuName}}
+                                    </el-menu-item>
+                                </template>
+                            </el-submenu>
+                            <el-menu-item index="twoMenu.fullPath" v-else @click="rootFunction(twoMenu.url)">
+                                {{twoMenu.menuName}}
+                            </el-menu-item>
+                        </template>
+                    </el-submenu>
+                </el-menu>
+            </el-aside>
+            <el-main @touchmove.prevent  class="right">
+                <router-view></router-view>
+            </el-main>
+        </div>
     </el-container>
 </template>
 
@@ -98,7 +82,7 @@
             }
         },
         created () {
-            this.$http.post('http://localhost:8080/paper/menu/listMenus', this.menuUser).then(response => {
+            this.$http.post('http://47.106.107.243:8080/paper/menu/listMenus', this.menuUser).then(response => {
                 this.allMenus = response.data.data;
             }, response => {
                 console.log("error");
@@ -114,42 +98,36 @@
 </script>
 
 <style>
-
     .container{
-        display: flex;
-        flex: 1;
+        width: 100%;
         height: 100%;
+    }
+
+    .top{
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 50px;
+        width: 100%;
+        background: #766efd;
+        padding: 20px;
+        z-index: 10000;
+        margin: 0;
+        display: block;
     }
 
     .left{
-        display: flex;
+        position: fixed;
+        top: 50px;
+        left: 0;
         width: 150px;
         height: 100%;
-        background: slateblue;
-        flex-direction: column;
+        background: #ffffff;
     }
 
     .right{
-        display: flex;
         height: 100%;
-        flex: 1;
-        flex-direction: column;
-    }
-
-    .right-top{
-        height: 50px;
-        background: #766efd;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-
-    .right-bottom{
-        flex: 1;
-        overflow:auto;
-    }
-
-    .right-bottom-in{
-        height: 2000px;
+        display: block;
     }
 
     .el-dropdown-link {
